@@ -1,6 +1,4 @@
 # Rooster
-
-# Ruster
 An image auto-crop and labeling software in Python 3
 
 
