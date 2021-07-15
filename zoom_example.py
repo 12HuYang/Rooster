@@ -86,6 +86,10 @@ class Zoom_Advanced(ttk.Frame):
         self.rownum=rownum
         self.colnum=colnum
         self.infectlist=[]
+        self.predictlist=[]
+        self.confidence=[]
+        self.confidup=0.95
+        self.confiddown=0.75
         self.getgrid=0
         # self.updatenpimage()
 
@@ -218,14 +222,21 @@ class Zoom_Advanced(ttk.Frame):
         if hasGrid==False:
             self.rownum=rownum
             self.colnum=colnum
+            self.infectlist=[0  for i in range(self.rownum*self.colnum)]
             # newimage_width,newimage_height=newimage.size
             self.image=newimage #.resize((int(newimage_width/2),int(newimage_height/2)))
             self.width, self.height = self.image.size
             print(self.width,self.height)
-            self.infectlist=[]
             self.getgrid=1
-            self.updatenpimage()
-            self.show_image()
+            if sum(self.infectlist)>0:  #has labels, to revise from hidden grids
+                tempinfeclist=np.where(np.array(self.infectlist)==1)
+                tempinfeclist=list(tempinfeclist)[0]
+                # tempinfeclist=[ele for ele in tempinfeclist]
+                # tempinfeclist=self.infectlist.copy()
+                self.labelmulti(tempinfeclist)
+            else:
+                self.updatenpimage()    #segment np.array by grid numbers, rows and columns
+                self.show_image()
         else:
             self.image=Image.open(self.path)
             print(self.width,self.height)
@@ -276,50 +287,159 @@ class Zoom_Advanced(ttk.Frame):
         mirrornpimage=cv2.resize(mirrornpimage,(int(self.width*self.imscale),int(self.height*self.imscale)),interpolation=cv2.INTER_LINEAR)
         # mirrornpimage=cv2.resize(mirrornpimage,(bbox[2]-bbox[0],bbox[3]-bbox[1]),interpolation=cv2.INTER_LINEAR)
         # infectnum=self.npimage[y,x]
-        infectnum=mirrornpimage[y,x]
+        infectnum=int(mirrornpimage[y,x])
         print(infectnum)
         if infectnum!=0:
             locs=np.where(self.npimage==int(infectnum))
             print(locs)
-            if infectnum not in self.infectlist:
-                self.infectlist.append(infectnum)
+            if self.infectlist[infectnum-1]==0:
+                # self.infectlist.append(infectnum)
+                self.infectlist[infectnum-1]=1
                 self.addbars(locs)
+                # color='red'
             else:
-                self.infectlist.remove(infectnum)
+                # self.infectlist.remove(infectnum)
+                self.infectlist[infectnum-1]=0
                 self.rmbars(locs)
-            print(len(self.infectlist))
+                # color='white'
+            print(sum(self.infectlist))
+        if len(self.predictlist)>0:
+            self.showindivicomparison(infectnum-1,locs)
         self.show_image()
 
     def labelmulti(self,infectlist):
-        self.infectlist=infectlist.copy()
-        for infectnum in self.infectlist:
-            print(infectnum)
-            if infectnum!=0:
-                locs=np.where(self.npimage==int(infectnum))
-                # print(locs)
-                self.addbars(locs)
+        self.infectlist=[0 for i in range(self.rownum*self.colnum)]
+        for i in range(0,self.rownum*self.colnum):
+            if i in infectlist:
+                self.infectlist[i-1]=1
+                infectnum=i
+                print(infectnum)
+                if infectnum!=0:
+                    locs=np.where(self.npimage==int(infectnum))
+                    # print(locs)
+                    self.addbars(locs)
+        if len(self.predictlist)>0:
+            self.showcomparison([],[])
         self.show_image()
 
     def labelall(self):
-        reverseinfect=list(np.arange(1,self.rownum*self.colnum+1))
-        self.uninfect=[]
-        for ele in self.infectlist:
-            reverseinfect.remove(ele)
-            self.uninfect.append(ele)
-        self.infectlist=reverseinfect.copy()
-        for infectnum in self.infectlist:
-            print(infectnum)
-            if infectnum!=0:
-                locs=np.where(self.npimage==int(infectnum))
-                # print(locs)
-                self.addbars(locs)
-        for uninfectnum in self.uninfect:
-            print(uninfectnum)
-            if uninfectnum!=0:
-                locs=np.where(self.npimage==int(uninfectnum))
-                # print(locs)
+        self.infectlist=list(np.array([1 for i in range(self.rownum*self.colnum)])-np.array(self.infectlist))
+        # for ele in self.infectlist:
+        #     reverseinfect.remove(ele)
+        #     self.uninfect.append(ele)
+        for i in range(len(self.infectlist)):
+            if self.infectlist[i]==0:
+                locs=np.where(self.npimage==(i+1))
                 self.rmbars(locs)
+            else:
+                locs=np.where(self.npimage==(i+1))
+                self.addbars(locs)
+        if len(self.predictlist)>0:
+            self.showcomparison([],[])
         self.show_image()
+
+    def adddiffsign(self,locs):
+        x0=min(locs[1])
+        y0=min(locs[0])
+        x1=max(locs[1])
+        y1=max(locs[0])
+        startx=int(x0+(x1-x0)/2)
+        draw=ImageDraw.Draw(self.image)
+        draw.line(((startx,y0),(x1,y0)),fill='orange',width=5) #draw up red line
+        # draw.line(((x0,y0),(x0,y1)),fill='orange',width=5) #draw left red line
+
+    def rmdiffsign(self,locs,color):
+        x0=min(locs[1])
+        y0=min(locs[0])
+        x1=max(locs[1])
+        y1=max(locs[0])
+        draw=ImageDraw.Draw(self.image)
+        draw.line(((x0,y0),(x1,y0)),fill=color,width=5)
+
+    def addconfbar(self,locs):
+        x0=min(locs[1])
+        y0=min(locs[0])
+        x1=max(locs[1])
+        y1=max(locs[0])
+        starty=int(y0+(y1-y0)/2)
+        draw=ImageDraw.Draw(self.image)
+        draw.line(((x0,starty),(x0,y1)),fill='brown',width=5)
+
+    def rmconfbar(self,locs,color):
+        x0=min(locs[1])
+        y0=min(locs[0])
+        x1=max(locs[1])
+        y1=max(locs[0])
+        draw=ImageDraw.Draw(self.image)
+        draw.line(((x0,y0),(x0,y1)),fill=color,width=5)
+
+    def showindivicomparison(self,i,locs):
+        difflist=list((np.array(self.predictlist)==np.array(self.infectlist))*1)
+        if difflist[i]==0:
+            self.adddiffsign(locs)
+        else:
+            if self.infectlist[i]==0:
+                color='white'
+            if self.infectlist[i]==1:
+                color='red'
+            self.rmdiffsign(locs,color)
+        if self.confidence[i]>=self.confiddown and self.confidence[i]<=self.confidup:
+            self.addconfbar(locs)
+        else:
+            if self.infectlist[i]==0:
+                color='white'
+            if self.infectlist[i]==1:
+                color='red'
+            self.rmconfbar(locs,color)
+        self.show_image()
+
+
+    def showcomparison(self,predicts,confidence):
+        # self.predictlist=[0 for i in range(len(self.infectlist))]
+        # for num in predicts:
+        #     self.predictlist[num]=1
+        if len(self.predictlist)==0:
+            self.predictlist=predicts.copy()
+            self.confidence=confidence.copy()
+        difflist=list((np.array(self.predictlist)==np.array(self.infectlist))*1)
+        for i in range(len(difflist)):
+            locs=np.where(self.npimage==(i+1))
+            if difflist[i]==0:  #do not agree
+                print(i+1)
+                self.adddiffsign(locs)
+            else:       #agree results
+                if self.infectlist[i]==0:
+                    color='white'
+                if self.infectlist[i]==1:
+                    color='red'
+                self.rmdiffsign(locs,color)
+            if self.confidence[i]>=self.confiddown and self.confidence[i]<=self.confidup:
+                self.addconfbar(locs)
+            else:
+                if self.infectlist[i]==0:
+                    color='white'
+                if self.infectlist[i]==1:
+                    color='red'
+                self.rmconfbar(locs,color)
+        self.show_image()
+
+    def changeconfidance(self,low,up):
+        if self.confiddown==low and self.confidup==up:
+            return
+        self.confiddown=low
+        self.confidup=up
+        for i in range(len(self.confidence)):
+            locs=np.where(self.npimage==(i+1))
+            if self.confidence[i]>=self.confiddown and self.confidence[i]<=self.confidup:
+                self.addconfbar(locs)
+            else:
+                if self.infectlist[i]==0:
+                    color='white'
+                if self.infectlist[i]==1:
+                    color='red'
+                self.rmconfbar(locs,color)
+        self.show_image()
+
 
     def output(self):
         res={}

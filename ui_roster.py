@@ -26,9 +26,11 @@ scaleval=IntVar()
 RGBbands=None
 RGBimg=None
 gridimg=None
+gridnum=0
 zoom=None
 hasGrid=False
-
+hasMap=False
+predictlabels=None
 
 # ------functions-----
 
@@ -62,7 +64,8 @@ def zoomimage(opt):
         return
 
 def Open_Multifile():
-    global gridbutton,rowentry,colentry,exportbutton,filename,zoombar,mapfilebutton
+    global gridbutton,rowentry,colentry,exportbutton,filename,zoombar,mapfilebutton,hasMap,hasGrid
+    global reversebutton,predictbutton
     filename=filedialog.askopenfilename()
     root.update()
     if Open_File()!=False:
@@ -74,7 +77,11 @@ def Open_Multifile():
         zoomin.configure(state=NORMAL)
         mapfilebutton.configure(state=NORMAL)
         predictbutton.configure(state=NORMAL)
+        reversebutton.configure(state=DISABLED)
+        predictbutton.configure(state=DISABLED)
         init_canvas(filename)
+        hasMap=False
+        hasGrid=False
 
 def Open_Map():
     mapfile=filedialog.askopenfilename()
@@ -100,13 +107,20 @@ def Open_Map():
         colnum=max(arrayrow[:,2])+1
         infected=np.where(arrayrow[:,3]==1)
         infected=list(infected)[0]+1
+        infected=[ele for ele in infected]
         print(totalgrid,rownum,colnum,infected)
-        global hasGrid,rowentry,colentry
+        global hasGrid,rowentry,colentry,hasMap
+        global reversebutton,predictbutton
         hasGrid=False
+        hasMap=True
         rowentry.delete(0,END)
         rowentry.insert(END,rownum)
+        rowentry.configure(state=DISABLED)
         colentry.delete(0,END)
         colentry.insert(END,colnum)
+        colentry.configure(state=DISABLED)
+        reversebutton.configure(state=NORMAL)
+        predictbutton.configure(state=NORMAL)
         setGrid()
         zoom.labelmulti(infected)
 
@@ -147,16 +161,41 @@ def setGrid():
         zoom.changeimage(gridimg,rownum,colnum,hasGrid)
         hasGrid=True
         reversebutton.configure(state=NORMAL)
-
+        predictbutton.configure(state=NORMAL)
     else:
         zoom.changeimage(gridimg,0,0,hasGrid)
         hasGrid=False
         reversebutton.configure(state=DISABLED)
+        predictbutton.configure(state=DISABLED)
 
 def setReverse():
     zoom.labelall()
 
-def export():
+def printimageexport():
+    print(imageexport.get())
+
+def exportopts():
+    global exportoption,imageexport
+    exportoption=StringVar()
+    imageexport=IntVar()
+    exportoption.set('P')
+    opt_window=Toplevel()
+    opt_window.geometry('300x150')
+    opt_window.title('Export options')
+    optionframe=Frame(opt_window)
+    optionframe.pack()
+    checkframe=Frame(opt_window)
+    checkframe.pack()
+    radiostyle=ttk.Style()
+    radiostyle.configure('R.TRadiobutton',foreground='White')
+    Radiobutton(optionframe,text='Export Prediction',variable=exportoption,value='P').pack(side=LEFT,padx=10,pady=10)
+    Radiobutton(optionframe,text='Export Current',variable=exportoption,value='C').pack(side=LEFT,padx=10,pady=10)
+    Checkbutton(checkframe,text='Export Grid Pictures',variable=imageexport,command=printimageexport).pack(padx=10,pady=10)
+    Button(checkframe,text='Export!',command=lambda: implementexport(opt_window)).pack(padx=10,pady=10)
+    opt_window.transient(root)
+    opt_window.grab_set()
+
+def implementexport(popup):
     outpath=filedialog.askdirectory()
     res=zoom.output()
     npimage=res['npimage']
@@ -165,10 +204,14 @@ def export():
     import csv
     head_tail=os.path.split(filename)
     originfile,extension=os.path.splitext(head_tail[1])
-    outputcsv=outpath+'/'+originfile+'_labeloutput.csv'
+    if exportoption.get()=='P':
+        outputcsv=outpath+'/'+originfile+'_prediction.csv'
+        headline=['index','row','col','prediction']
+    if exportoption.get()=='C':
+        outputcsv=outpath+'/'+originfile+'_labeloutput.csv'
+        headline=['index','row','col','label']
     with open(outputcsv,mode='w') as f:
         csvwriter=csv.writer(f)
-        headline=['index','row','col','label']
         csvwriter.writerow(headline)
         rownum=int(rowentry.get())
         colnum=int(colentry.get())
@@ -184,8 +227,9 @@ def export():
             y0=min(locs[0])
             x1=max(locs[1])
             y1=max(locs[0])
-            cropimage=RGBimg.crop((x0,y0,x1,y1))
-            cropimage.save(outpath+'/'+originfile+'_crop_'+str(index)+'.png','PNG')
+            if int(imageexport.get())==1:
+                cropimage=RGBimg.crop((x0,y0,x1,y1))
+                cropimage.save(outpath+'/'+originfile+'_crop_'+str(index)+'.png','PNG')
             midx=x0+5
             midy=y0+5
             state='crop-'+str(index)
@@ -194,7 +238,10 @@ def export():
             draw.text((midx-1, midy-1), text=state, fill='white')
             draw.text((midx+1, midy-1), text=state, fill='white')
             draw.text((midx,midy),text=state,fill='black')
-            label='0' if index not in infectedlist else '1'
+            if exportoption.get()=='P':
+                label=predictlabels[i]
+            if exportoption.get()=='C':
+                label=infectedlist[i]
             content=[index,row,col,label]
             csvwriter.writerow(content)
             print(index)
@@ -202,17 +249,42 @@ def export():
         f.close()
     outputimg.save(outpath+'/'+originfile+'_gridimg'+'.png','PNG')
     messagebox.showinfo('Output Done!',message='Results are output to'+outpath)
+    popup.destroy()
 
+
+def export():
+    if hasGrid==False:
+        return
+    exportopts()
+    try:
+        print(exportoption.get(),imageexport.get())
+    except:
+        return
+
+def changeconfidencerange(event):
+    newconfid=slider.getValues()
+    print(newconfid)
+    zoom.changeconfidance(newconfid[0],newconfid[1])
 
 def prediction():
+    global predictlabels,confidence
+    if predictlabels is not None:
+        zoom.showcomparison(predictlabels,confidence)
     gridnum=int(rowentry.get())*int(colentry.get())
     import random
-    randomlabel=random.sample(range(1,gridnum+1),int(gridnum/2))
-    print(len(randomlabel),randomlabel)
-    global hasGrid
-    hasGrid=False
-    setGrid()
-    zoom.labelmulti(randomlabel)
+    randomlabel=(np.array(random.sample(range(0,gridnum),int(gridnum/3))),)
+    predictlabels=np.array([0 for i in range(gridnum)])
+    predictlabels[randomlabel]=1
+    confidence=np.random.uniform(0.00,1.00,gridnum)
+    print(len(randomlabel),predictlabels,confidence)
+
+    zoom.showcomparison(list(predictlabels),list(confidence))
+    global slider
+    slider.state(NORMAL,changeconfidencerange)
+    # global hasGrid
+    # hasGrid=False
+    # setGrid()
+    # zoom.labelmulti(randomlabel)
 
 
 
@@ -301,13 +373,13 @@ reversebutton.configure(state=DISABLED)
 predictbutton=Button(gridbuttondisplay,text='Predict',cursor='hand2',command=prediction)
 predictbutton.pack(side=LEFT,padx=10)
 predictbutton.configure(state=DISABLED)
-confidbutton=Button(confidframe,text='Confidence',cursor='hand2')
+confidbutton=Label(confidframe,text='Confidence',cursor='hand2')
 confidbutton.pack(side=TOP,padx=10)
-confidbutton.configure(state=DISABLED)
+# confidbutton.configure(state=DISABLED)
 from tkSliderWidget import Slider
-slider=Slider(confidframe,width=100,height=30,min_val=0.50,max_val=1.00,init_lis=[0.75,0.95],show_value=True)
+slider=Slider(confidframe,width=100,height=30,min_val=0.50,max_val=1.00,init_lis=[0.75,0.95],show_value=False)
 slider.pack(side=BOTTOM)
-slider.state(DISABLED)
+slider.state(DISABLED,changeconfidencerange)
 
 exportbutton=Button(outputframe,text='Export',cursor='hand2',command=export)
 exportbutton.pack(side=LEFT,padx=10)

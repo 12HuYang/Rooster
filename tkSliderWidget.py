@@ -10,8 +10,8 @@ class Slider(Frame):
     LINE_WIDTH = 3
     BAR_COLOR_INNER = "#5c8a8a"
     BAR_COLOR_OUTTER = "#c2d6d6"
-    BAR_RADIUS = 10
-    BAR_RADIUS_INNER = BAR_RADIUS-5
+    BAR_RADIUS = 7
+    BAR_RADIUS_INNER = BAR_RADIUS-3
     DIGIT_PRECISION = '.2f' # for showing in the canvas
     def __init__(self, master, width = 400, height = 80, min_val = 0, max_val = 1, init_lis = None, show_value = True):
         Frame.__init__(self, master, height = height, width = width)
@@ -49,14 +49,16 @@ class Slider(Frame):
         self.__addTrack(self.slider_x, self.slider_y, self.canv_W-self.slider_x, self.slider_y)
         for bar in self.bars:
             bar["Ids"] = self.__addBar(bar["Pos"])
-    def state(self,indi):
+    def state(self,indi,FUN):
         self.canv.configure(state=indi)
         if indi==DISABLED:
             self.canv.unbind("<Motion>")
             self.canv.unbind("<B1-Motion>")
+            self.canv.unbind("<Leave>")
         if indi==NORMAL:
             self.canv.bind("<Motion>", self._mouseMotion)
             self.canv.bind("<B1-Motion>", self._moveBar)
+            self.canv.bind("<Leave>",FUN)
 
     def getValues(self):
         values = [bar["Value"] for bar in self.bars]
