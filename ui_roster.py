@@ -34,6 +34,9 @@ hasMap=False
 predictlabels=None
 confidence=None
 hasPred=False
+rownum=0
+colnum=0
+
 
 # ------functions-----
 
@@ -141,12 +144,24 @@ def Open_Map():
 
 def setGrid():
     global gridimg,hasGrid,reversebutton
+    global rownum, colnum, confidence,slider
+    print('hasGrid',hasGrid)
     if hasGrid==False:
         try:
-            rownum=int(rowentry.get())
-            colnum=int(colentry.get())
+            temprownum=int(rowentry.get())
+            tempcolnum=int(colentry.get())
         except:
             return
+        if rownum != 0 and (rownum != temprownum or colnum != tempcolnum):
+            res = messagebox.askquestion('Warning', 'Changes happened to rows or cols. Do you want to continue?')
+            if res == 'no':
+                return
+
+        rownum=temprownum
+        colnum=tempcolnum
+        confidence=None
+        slider.state(["disabled"])
+        slider.unbind('<Leave>')
         rgbwidth,rgbheight=RGBimg.size
         row_stepsize=int(rgbheight/rownum)
         col_stepsize=int(rgbwidth/colnum)
@@ -216,7 +231,7 @@ def implementexport(popup):
     #     outputcsv=outpath+'/'+originfile+'_prediction.csv'
     #     headline=['index','row','col','prediction']
     # if exportoption.get()=='C':
-    outputcsv=outpath+'/'+originfile+'_labeloutput.csv'
+    outputcsv=outpath+'/'+originfile+'_labeloutput_'+'confidthres='+str(slider.get())+'.csv'
     headline=['index','row','col','label','prediction','confidence']
     with open(outputcsv,mode='w') as f:
         csvwriter=csv.writer(f)
@@ -281,10 +296,11 @@ def changeconfidencerange(event):
 def prediction():
     global predictlabels,confidence,hasPred
     if confidence is not None:
-        zoom.showcomparison(predictlabels,confidence,hasPred)
+        zoom.showcomparison(confidence,hasPred)
         hasPred=-hasPred
         return
     dlparameter=filedialog.askopenfilename()
+    root.update()
     if dlparameter!='':
         if '.pth' not in dlparameter:
             messagebox.showerror('Document type error',message='Please load weight document ends with .pth')
@@ -292,13 +308,14 @@ def prediction():
         tail=dlparameter.find('_')
         dlmodel=dlparameter[:tail]
         dlinput={}  #input for deep learning model prediction
-        rownum={'row':int(rowentry.get())}
-        colnum={'col':int(colentry.get())}
+        # global rownum,colnum
+        rownumdict={'row':rownum}
+        colnumdict={'col':colnum}
         imgpath={'imagepath':filename}
         dlparapath={'weight':dlparameter}
         dlmodelvalue={'model':dlmodel}
-        dlinput.update(rownum)
-        dlinput.update(colnum)
+        dlinput.update(rownumdict)
+        dlinput.update(colnumdict)
         dlinput.update(imgpath)
         dlinput.update(dlparapath)
         dlinput.update(dlmodelvalue)
@@ -317,6 +334,7 @@ def prediction():
     zoom.showcomparison(list(confidence),hasPred)
     hasPred=-hasPred
     global slider
+    slider.set(0.50)
     slider.state(["!disabled"])
     slider.bind('<Leave>',changeconfidencerange)
     # slider.state(NORMAL,changeconfidencerange)

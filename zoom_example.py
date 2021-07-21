@@ -411,7 +411,7 @@ class Zoom_Advanced(ttk.Frame):
         # for num in predicts:
         #     self.predictlist[num]=1
         print('hasPred',hasPred)
-        if len(self.confidence)==0:
+        if self.confidence!=confidence and len(confidence)!=0:
             # self.predictlist=predicts.copy()
             self.confidence=confidence.copy()
         temppred=[0 for i in range(len(self.confidence))]
@@ -458,6 +458,8 @@ class Zoom_Advanced(ttk.Frame):
         #     return
         # self.confiddown=low
         # self.confidup=up
+        if self.confidthres==confidthres:
+            return
         self.confidthres=confidthres
         print('change confidthres',self.confidthres)
         # for i in range(len(self.confidence)):
