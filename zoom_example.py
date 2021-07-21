@@ -233,7 +233,7 @@ class Zoom_Advanced(ttk.Frame):
                 # tempinfeclist=[ele for ele in tempinfeclist]
                 # tempinfeclist=self.infectlist.copy()
                 self.labelmulti(tempinfeclist)
-                if len(self.predictlist)>0:
+                if len(self.confidence)>0:
                     self.showcomparison([],[],False)
             else:
                 self.infectlist=[0  for i in range(self.rownum*self.colnum)]
@@ -310,7 +310,7 @@ class Zoom_Advanced(ttk.Frame):
                 self.rmbars(locs)
                 # color='white'
             print(sum(self.infectlist))
-        if len(self.predictlist)>0:
+        if len(self.confidence)>0:
             self.showindivicomparison(infectnum-1,locs)
         self.show_image()
 
@@ -325,7 +325,7 @@ class Zoom_Advanced(ttk.Frame):
                     locs=np.where(self.npimage==int(infectnum))
                     # print(locs)
                     self.addbars(locs)
-        if len(self.predictlist)>0:
+        if len(self.confidence)>0:
             self.showcomparison([],[],False)
         self.show_image()
 
@@ -341,7 +341,7 @@ class Zoom_Advanced(ttk.Frame):
             else:
                 locs=np.where(self.npimage==(i+1))
                 self.addbars(locs)
-        if len(self.predictlist)>0:
+        if len(self.confidence)>0:
             self.showcomparison([],[],False)
         self.show_image()
 
@@ -382,7 +382,7 @@ class Zoom_Advanced(ttk.Frame):
         draw.line(((x0,y0),(x0,y1)),fill='white',width=5)
 
     def showindivicomparison(self,i,locs):
-        temppred = [0 for i in range(len(self.predictlist))]
+        temppred = [0 for i in range(len(self.confidence))]
         satisfiedpred = np.where(np.array(self.confidence) >= self.confidthres)
         temppred=np.array(temppred)
         temppred[satisfiedpred] = 1
@@ -406,15 +406,15 @@ class Zoom_Advanced(ttk.Frame):
         self.show_image()
 
 
-    def showcomparison(self,predicts,confidence,hasPred):
+    def showcomparison(self,confidence,hasPred):
         # self.predictlist=[0 for i in range(len(self.infectlist))]
         # for num in predicts:
         #     self.predictlist[num]=1
         print('hasPred',hasPred)
-        if len(self.predictlist)==0:
-            self.predictlist=predicts.copy()
+        if len(self.confidence)==0:
+            # self.predictlist=predicts.copy()
             self.confidence=confidence.copy()
-        temppred=[0 for i in range(len(self.predictlist))]
+        temppred=[0 for i in range(len(self.confidence))]
         satisfiedpred=np.where(np.array(self.confidence)>=self.confidthres)
         temppred=np.array(temppred)
         temppred[satisfiedpred]=1
