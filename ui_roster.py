@@ -218,6 +218,29 @@ def exportopts():
     opt_window.transient(root)
     opt_window.grab_set()
 
+def changecsvname(inputname):
+    global csvname
+    if csvname!=inputname:
+        csvname=inputname
+
+
+def exportcsvname(csvfilename):
+    askwindow=Toplevel()
+    askwindow.geometry('300x150')
+    askwindow.title('CSV file name')
+    inputframe=Frame(askwindow)
+    inputframe.pack()
+    intro=Label(inputframe,text='Out put csv file name:')
+    intro.pack()
+    e1=Entry(inputframe)
+    e1.insert(END,csvfilename)
+    Button(inputframe,text='Change file name',command=lambda: changecsvname(e1.get())).pack(padx=18,pady=18)
+    askwindow.transient(root)
+    askwindow.grab_set()
+
+
+
+
 def implementexport(popup):
     outpath=filedialog.askdirectory()
     root.update()
@@ -233,8 +256,9 @@ def implementexport(popup):
     #     headline=['index','row','col','prediction']
     # if exportoption.get()=='C':
     outputcsv=outpath+'/'+originfile+'_labeloutput_'+'confidthres='+str(slider.get())+'.csv'
+    exportcsvname(outputcsv)
     headline=['index','row','col','label','prediction','confidence']
-    with open(outputcsv,mode='w') as f:
+    with open(csvname,mode='w') as f:
         csvwriter=csv.writer(f)
         csvwriter.writerow(headline)
         rownum=int(rowentry.get())
@@ -266,9 +290,12 @@ def implementexport(popup):
             #     label=predictlabels[i]
             # if exportoption.get()=='C':
             label=infectedlist[i]
-            pred_label= 1 if list(confidence)[i]>=float(slider.get()) else 0
-            confidvalue=list(confidence)[i]
-            content=[index,row,col,label,pred_label,confidvalue]
+            if confidence!=None:
+                pred_label= 1 if list(confidence)[i]>=float(slider.get()) else 0
+                confidvalue=list(confidence)[i]
+                content=[index,row,col,label,pred_label,confidvalue]
+            else:
+                content = [index, row, col, label]
             csvwriter.writerow(content)
             print(index)
         del draw
