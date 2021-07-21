@@ -477,6 +477,10 @@ class Zoom_Advanced(ttk.Frame):
         self.showcomparison([],False)
         # self.show_image()
 
+    def resetlabels(self):
+        self.infectlist = []
+        self.predictlist = []
+        self.confidence = []
 
     def output(self):
         res={}

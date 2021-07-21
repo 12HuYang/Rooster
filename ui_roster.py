@@ -90,7 +90,7 @@ def Open_Multifile():
         predictlabels=None
         confidence=None
         init_canvas(filename)
-        slider.unbind('<Leave>')
+        slider.unbind('<ButtonRelease-1>')
         hasMap=False
         hasGrid=False
         hasPred=False
@@ -158,6 +158,8 @@ def setGrid():
             res = messagebox.askquestion('Warning', 'Changes happened to rows or cols. Do you want to continue?')
             if res == 'no':
                 return
+            if res=='yes':
+                zoom.resetlabels()
 
         rownum=temprownum
         colnum=tempcolnum
@@ -352,7 +354,7 @@ def prediction():
     global slider
     slider.set(0.50)
     slider.state(["!disabled"])
-    slider.bind('<Leave>',changeconfidencerange)
+    slider.bind('<ButtonRelease-1>',changeconfidencerange)
     # slider.state(NORMAL,changeconfidencerange)
     # global hasGrid
     # hasGrid=False
