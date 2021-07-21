@@ -31,8 +31,15 @@ def resnet18(weight='./models/torch_2class_resnet_3.pth'):
     model.load_state_dict(weights)
     return model
 
-def predictionCNN(img, rownum, colnum, tilesize=224):
+def predictionCNN(dlinput):
     print("start prediction!")
+    rownum = dlinput['row']
+    colnum = dlinput['col']
+    img = dlinput['imagepath']
+    weight = dlinput['weight']
+    model_name = dlinput['model']
+
+    img = Image.open(img)
     print("row num is %s" % rownum)
     print("col num is %s" % colnum)
     print("++++++")
@@ -42,7 +49,7 @@ def predictionCNN(img, rownum, colnum, tilesize=224):
     col_stepsize = int(rgbwidth / colnum)
 
     # model to cpu or gpu
-    model = resnet18()
+    model = resnet18(weight)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
@@ -89,8 +96,8 @@ def predictionCNN(img, rownum, colnum, tilesize=224):
 
 if __name__ == '__main__':
     start = time.time()
-    crop('./example/DJI_0197.JPG')
-    predictionCNN(rownum=10,colnum=10)
-    end = time.time()
+    # crop('./example/DJI_0197.JPG')
+    # predictionCNN(rownum=10,colnum=10)
+    # end = time.time()
     t = end - start
     print("time is %s s"%(t))
