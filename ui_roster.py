@@ -250,7 +250,7 @@ def implementexport(popup):
             #     label=predictlabels[i]
             # if exportoption.get()=='C':
             label=infectedlist[i]
-            pred_label=list(predictlabels)[i]
+            pred_label= 1 if list(confidence)[i]>=float(slider.get()) else 0
             confidvalue=list(confidence)[i]
             content=[index,row,col,label,pred_label,confidvalue]
             csvwriter.writerow(content)
@@ -309,12 +309,12 @@ def prediction():
         import random
         gridnum = int(rowentry.get()) * int(colentry.get())
         randomlabel=(np.array(random.sample(range(0,gridnum),int(gridnum/3))),)
-        predictlabels=np.array([0 for i in range(gridnum)])
-        predictlabels[randomlabel]=1
+        # predictlabels=np.array([0 for i in range(gridnum)])
+        # predictlabels[randomlabel]=1
         confidence=np.random.uniform(0.00,1.00,gridnum)
-    print(len(randomlabel),predictlabels,confidence)
+    print(len(randomlabel),[],confidence)
 
-    zoom.showcomparison(list(predictlabels),list(confidence),hasPred)
+    zoom.showcomparison([],list(confidence),hasPred)
     hasPred=-hasPred
     global slider
     slider.state(["!disabled"])
