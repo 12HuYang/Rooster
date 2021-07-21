@@ -7,6 +7,7 @@ from PIL import ImageTk,ImageGrab
 import cv2
 import numpy as np
 import os
+from predictionModel import predictionCNN
 
 root=Tk()
 root.title('Rootster v.0 ')
@@ -301,6 +302,7 @@ def prediction():
         dlinput.update(imgpath)
         dlinput.update(dlparapath)
         dlinput.update(dlmodelvalue)
+        confidence = predictionCNN(dlinput)
         #dlinput is the arguments for deep learning model prediction
         #return of deep learning model should be probability of being diseases
     else:
