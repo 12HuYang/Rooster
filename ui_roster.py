@@ -287,6 +287,7 @@ def prediction():
     if dlparameter!='':
         if '.pth' not in dlparameter:
             messagebox.showerror('Document type error',message='Please load weight document ends with .pth')
+            return
         tail=dlparameter.find('_')
         dlmodel=dlparameter[:tail]
         dlinput={}  #input for deep learning model prediction
