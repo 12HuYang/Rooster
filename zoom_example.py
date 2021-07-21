@@ -234,7 +234,7 @@ class Zoom_Advanced(ttk.Frame):
                 # tempinfeclist=self.infectlist.copy()
                 self.labelmulti(tempinfeclist)
                 if len(self.confidence)>0:
-                    self.showcomparison([],[],False)
+                    self.showcomparison([],False)
             else:
                 self.infectlist=[0  for i in range(self.rownum*self.colnum)]
                 # newimage_width,newimage_height=newimage.size
@@ -326,7 +326,7 @@ class Zoom_Advanced(ttk.Frame):
                     # print(locs)
                     self.addbars(locs)
         if len(self.confidence)>0:
-            self.showcomparison([],[],False)
+            self.showcomparison([],False)
         self.show_image()
 
     def labelall(self):
@@ -342,7 +342,7 @@ class Zoom_Advanced(ttk.Frame):
                 locs=np.where(self.npimage==(i+1))
                 self.addbars(locs)
         if len(self.confidence)>0:
-            self.showcomparison([],[],False)
+            self.showcomparison([],False)
         self.show_image()
 
     def adddiffsign(self,locs):
@@ -472,7 +472,7 @@ class Zoom_Advanced(ttk.Frame):
         #         # if self.infectlist[i]==1:
         #         #     color='red'
         #         self.rmconfbar(locs)
-        self.showcomparison([],[],False)
+        self.showcomparison([],False)
         # self.show_image()
 
 
