@@ -220,6 +220,7 @@ def exportopts():
 
 def implementexport(popup):
     outpath=filedialog.askdirectory()
+    root.update()
     res=zoom.output()
     npimage=res['npimage']
     labelimage=res['labeledimage']
