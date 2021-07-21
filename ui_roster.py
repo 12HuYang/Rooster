@@ -36,6 +36,8 @@ confidence=None
 hasPred=False
 rownum=0
 colnum=0
+csvname=''
+e1=None
 
 
 # ------functions-----
@@ -198,7 +200,7 @@ def printimageexport():
     print(imageexport.get())
 
 def exportopts():
-    global exportoption,imageexport
+    global exportoption,imageexport,csvname,e1
     exportoption=StringVar()
     imageexport=IntVar()
     exportoption.set('P')
@@ -214,30 +216,17 @@ def exportopts():
     # Radiobutton(optionframe,text='Export Prediction',variable=exportoption,value='P').pack(side=LEFT,padx=10,pady=10)
     # Radiobutton(optionframe,text='Export Current',variable=exportoption,value='C').pack(side=LEFT,padx=10,pady=10)
     Checkbutton(checkframe,text='Export Grid Pictures',variable=imageexport,command=printimageexport).pack(padx=10,pady=10)
+    head_tail = os.path.split(filename)
+    originfile, extension = os.path.splitext(head_tail[1])
+    csvname = originfile + '_labeloutput_' + 'confidthres=' + str(slider.get()) + '.csv'
+    intro = Label(checkframe, text='Out put csv file name:')
+    intro.pack()
+    e1 = Entry(checkframe)
+    e1.pack()
+    e1.insert(END, csvname)
     Button(checkframe,text='Export!',command=lambda: implementexport(opt_window)).pack(padx=10,pady=10)
     opt_window.transient(root)
     opt_window.grab_set()
-
-def changecsvname(inputname):
-    global csvname
-    if csvname!=inputname:
-        csvname=inputname
-
-
-def exportcsvname(csvfilename):
-    askwindow=Toplevel()
-    askwindow.geometry('300x150')
-    askwindow.title('CSV file name')
-    inputframe=Frame(askwindow)
-    inputframe.pack()
-    intro=Label(inputframe,text='Out put csv file name:')
-    intro.pack()
-    e1=Entry(inputframe)
-    e1.insert(END,csvfilename)
-    Button(inputframe,text='Change file name',command=lambda: changecsvname(e1.get())).pack(padx=18,pady=18)
-    askwindow.transient(root)
-    askwindow.grab_set()
-
 
 
 
@@ -255,10 +244,9 @@ def implementexport(popup):
     #     outputcsv=outpath+'/'+originfile+'_prediction.csv'
     #     headline=['index','row','col','prediction']
     # if exportoption.get()=='C':
-    outputcsv=outpath+'/'+originfile+'_labeloutput_'+'confidthres='+str(slider.get())+'.csv'
-    exportcsvname(outputcsv)
+    outputcsv=outpath+'/'+e1.get()
     headline=['index','row','col','label','prediction','confidence']
-    with open(csvname,mode='w') as f:
+    with open(outputcsv,mode='w') as f:
         csvwriter=csv.writer(f)
         csvwriter.writerow(headline)
         rownum=int(rowentry.get())
