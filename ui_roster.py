@@ -312,9 +312,9 @@ def prediction():
         # predictlabels=np.array([0 for i in range(gridnum)])
         # predictlabels[randomlabel]=1
         confidence=np.random.uniform(0.00,1.00,gridnum)
-    print(len(randomlabel),[],confidence)
+    print(len(confidence))
 
-    zoom.showcomparison([],list(confidence),hasPred)
+    zoom.showcomparison(list(confidence),hasPred)
     hasPred=-hasPred
     global slider
     slider.state(["!disabled"])
