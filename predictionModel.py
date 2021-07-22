@@ -40,6 +40,8 @@ def predictionCNN(dlinput):
     model_name = dlinput['model']
 
     img = Image.open(img)
+    if img.format!='JPEG':
+        img=img.convert('RGB')
     print("row num is %s" % rownum)
     print("col num is %s" % colnum)
     print("++++++")
