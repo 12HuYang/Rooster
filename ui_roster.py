@@ -52,7 +52,7 @@ def init_canvas(path):
 
 
 def Open_File():
-    global RGBimg
+    global RGBimg,filename
     head_tail = os.path.split(filename)
     originfile, extension = os.path.splitext(head_tail[1])
     # print(originfile,extension)
@@ -68,6 +68,7 @@ def Open_File():
             heif_file.stride,
         )
         RGBimg.save(head_tail+'/'+originfile+'.jpg',"JPEG")
+        filename=head_tail+'/'+originfile+'.jpg'
         return True
 
 
