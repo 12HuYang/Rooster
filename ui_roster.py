@@ -55,7 +55,7 @@ def Open_File():
     global RGBimg
     head_tail = os.path.split(filename)
     originfile, extension = os.path.splitext(head_tail[1])
-    print(originfile,extension)
+    # print(originfile,extension)
     if 'HEIC' in extension:
         import pyheif
         heif_file=pyheif.read(filename)
@@ -67,7 +67,7 @@ def Open_File():
             heif_file.mode,
             heif_file.stride,
         )
-        RGBimg.save()
+        RGBimg.save(head_tail+'/'+originfile+'.jpg',"JPEG")
         return True
 
 
@@ -77,6 +77,9 @@ def Open_File():
         print('image size:',h,w)
         # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
+        # head_tail = os.path.split(filename)
+        # originfile, extension = os.path.splitext(head_tail[1])
+        # print('head_tail',head_tail,'originfile',originfile,'extension',extension)
     except:
         return False
     return True
