@@ -1,10 +1,6 @@
 # Rooster
 An image auto-crop and labeling software in Python 3.7
-Need to run
-
-```brew install libheif``` 
-
-to install pyheif package
+#### Need to run ```brew install libheif``` to install pyheif package
 
 
 #### Ruster Demo Video
