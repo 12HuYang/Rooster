@@ -2,7 +2,7 @@
 An image auto-crop and labeling software in Python 3.7
 Need to run
 
-brew install libheif
+```brew install libheif``` 
 
 to install pyheif package
 
