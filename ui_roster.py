@@ -152,7 +152,7 @@ def Open_Map():
             rows.pop(0)
             totalgrid=len(rows)
             for i in range(totalgrid):
-                temprow=[int(rows[i][e]) for e in range(len(rows[i])-2)]
+                temprow=[int(rows[i][e]) for e in range(4)]
                 transrows.append(temprow)
                 # print(temprow)
         arrayrow=np.array(transrows)
