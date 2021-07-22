@@ -55,7 +55,7 @@ def Open_File():
     global RGBimg,filename
     head_tail = os.path.split(filename)
     originfile, extension = os.path.splitext(head_tail[1])
-    # print(originfile,extension)
+    print(originfile,extension)
     if 'HEIC' in extension:
         import pyheif
         heif_file=pyheif.read(filename)
@@ -70,6 +70,25 @@ def Open_File():
         RGBimg.save(head_tail[0]+'/'+originfile+'.jpg',"JPEG")
         filename=head_tail[0]+'/'+originfile+'.jpg'
         return True
+    # files=os.listdir(head_tail[0])
+    # import pyheif
+    # for tempname in files:
+    #     if 'HEIC' in tempname:
+    #         originfile, extension = os.path.splitext(tempname)
+    #         heif_file = pyheif.read(head_tail[0]+'/'+tempname)
+    #         RGBimg=Image.frombytes(
+    #             heif_file.mode,
+    #             heif_file.size,
+    #             heif_file.data,
+    #             "raw",
+    #             heif_file.mode,
+    #             heif_file.stride,
+    #         )
+    #         RGBimg.save(head_tail[0]+'/'+originfile+'.jpg',"JPEG")
+    #         filename=head_tail[0]+'/'+originfile+'.jpg'
+    #         print(filename)
+    # return True
+
 
 
     try:
