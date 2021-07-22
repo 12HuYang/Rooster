@@ -24,7 +24,7 @@ screenstd=min(screenheight-100,screenwidth-100,850)
 
 viewopt_var=StringVar()
 scaleval=DoubleVar()
-RGBbands=None
+# RGBbands=None
 RGBimg=None
 gridimg=None
 gridnum=0
@@ -52,12 +52,30 @@ def init_canvas(path):
 
 
 def Open_File():
-    global RGBbands,RGBimg
+    global RGBimg
+    head_tail = os.path.split(filename)
+    originfile, extension = os.path.splitext(head_tail[1])
+    print(originfile,extension)
+    if 'HEIC' in extension:
+        import pyheif
+        heif_file=pyheif.read(filename)
+        RGBimg=Image.frombytes(
+            heif_file.mode,
+            heif_file.size,
+            heif_file.data,
+            "raw",
+            heif_file.mode,
+            heif_file.stride,
+        )
+        RGBimg.save()
+        return True
+
+
     try:
         Filersc=cv2.imread(filename,flags=cv2.IMREAD_ANYCOLOR)
         h,w,c=np.shape(Filersc)
         print('image size:',h,w)
-        RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
+        # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
     except:
         return False
@@ -115,6 +133,11 @@ def Open_Map():
                 transrows.append(temprow)
                 # print(temprow)
         arrayrow=np.array(transrows)
+        print(arrayrow.shape)
+        if arrayrow.shape[1]!=6:
+            messagebox.showerror('Error', message='Incorrect contents to open. \n Contents shape is:'
+                                                  +str(arrayrow.shape[0])+'x'+str(arrayrow.shape[1]))
+            return
         rownum=max(arrayrow[:,1])+1
         colnum=max(arrayrow[:,2])+1
         infected=np.where(arrayrow[:,3]==1)
