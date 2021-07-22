@@ -67,8 +67,8 @@ def Open_File():
             heif_file.mode,
             heif_file.stride,
         )
-        RGBimg.save(head_tail+'/'+originfile+'.jpg',"JPEG")
-        filename=head_tail+'/'+originfile+'.jpg'
+        RGBimg.save(head_tail[0]+'/'+originfile+'.jpg',"JPEG")
+        filename=head_tail[0]+'/'+originfile+'.jpg'
         return True
 
 
@@ -138,7 +138,7 @@ def Open_Map():
                 # print(temprow)
         arrayrow=np.array(transrows)
         print(arrayrow.shape)
-        if arrayrow.shape[1]!=6:
+        if arrayrow.shape[1]!=4:
             messagebox.showerror('Error', message='Incorrect contents to open. \n Contents shape is:'
                                                   +str(arrayrow.shape[0])+'x'+str(arrayrow.shape[1]))
             return
@@ -312,7 +312,7 @@ def implementexport(popup):
                 confidvalue=list(confidence)[i]
                 content=[index,row,col,label,pred_label,confidvalue]
             else:
-                content = [index, row, col, label]
+                content = [index, row, col, label,0,0]
             csvwriter.writerow(content)
             print(index)
         del draw

@@ -319,7 +319,8 @@ class Zoom_Advanced(ttk.Frame):
         for i in range(0,self.rownum*self.colnum):
             if i in infectlist:
                 self.infectlist[i]=1
-                infectnum=i+1
+                # infectnum=i+1
+                infectnum=i
                 print(infectnum)
                 if infectnum!=0:
                     locs=np.where(self.npimage==int(infectnum))
