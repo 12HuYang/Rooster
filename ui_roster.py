@@ -70,6 +70,8 @@ def Open_File():
         RGBimg.save(head_tail[0]+'/'+originfile+'.jpg',"JPEG")
         filename=head_tail[0]+'/'+originfile+'.jpg'
         return True
+
+    '''batch process HEIC pictures'''
     # files=os.listdir(head_tail[0])
     # import pyheif
     # for tempname in files:
@@ -164,23 +166,26 @@ def Open_Map():
         rownum=max(arrayrow[:,1])+1
         colnum=max(arrayrow[:,2])+1
         infected=np.where(arrayrow[:,3]==1)
-        infected=list(infected)[0]+1
+        infected=list(infected)[0]
         infected=[ele for ele in infected]
         print(totalgrid,rownum,colnum,infected)
         global hasGrid,rowentry,colentry,hasMap
         global reversebutton,predictbutton,gridbutton
         hasGrid=False
         hasMap=True
+        rowentry.configure(state=NORMAL)
         rowentry.delete(0,END)
         rowentry.insert(END,rownum)
         rowentry.configure(state=DISABLED)
+        colentry.configure(state=NORMAL)
         colentry.delete(0,END)
         colentry.insert(END,colnum)
         colentry.configure(state=DISABLED)
         reversebutton.configure(state=DISABLED)
         predictbutton.configure(state=NORMAL)
         gridbutton.configure(state=DISABLED)
-        setGrid()
+        zoom.resetlabels()
+        setGrid(resetimage=True)
         zoom.labelmulti(infected)
 
 
@@ -190,10 +195,39 @@ def Open_Map():
 
 
 
-def setGrid():
-    global gridimg,hasGrid,reversebutton
+def setGrid(resetimage=False):
+    global gridimg,hasGrid,reversebutton,gridbutton
     global rownum, colnum, confidence,slider
     print('hasGrid',hasGrid)
+    if resetimage==True:
+        rownum=int(rowentry.get())
+        colnum=int(colentry.get())
+        print(resetimage,rownum,colnum)
+        confidence = None
+        slider.state(["disabled"])
+        slider.unbind('<Leave>')
+        rgbwidth, rgbheight = RGBimg.size
+        row_stepsize = int(rgbheight / rownum)
+        col_stepsize = int(rgbwidth / colnum)
+        gridimg = RGBimg.copy()
+        draw = ImageDraw.Draw(gridimg)
+        row_start = 0
+        row_end = rgbheight
+        col_start = 0
+        col_end = rgbwidth
+        for col in range(0, col_end, col_stepsize):
+            line = ((col, row_start), (col, row_end))
+            draw.line(line, fill='white', width=5)
+
+        for row in range(0, row_end, row_stepsize):
+            line = ((col_start, row), (col_end, row))
+            draw.line(line, fill='white', width=5)
+
+        del draw
+        # gridimg.show()
+        zoom.changeimage(gridimg, rownum, colnum, False)
+        hasGrid = True
+        return
     if hasGrid==False:
         try:
             temprownum=int(rowentry.get())
