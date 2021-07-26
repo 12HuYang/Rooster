@@ -59,21 +59,27 @@ def predictionCNN(dlinput):
     y_pred = []
     model.eval()
     with torch.no_grad():
-        for col in range(0,rgbwidth,col_stepsize):
-            if col + col_stepsize <= rgbwidth:
-                for row in range(0, rgbheight, row_stepsize):
-                    if row + row_stepsize <= rgbheight:
-                        b_w, b_h = 0,0
-
-                        if col + col_stepsize * 2 > rgbwidth:
-                            b_w = rgbwidth - col
-                        else:
-                            b_w = col_stepsize
-
-                        if row + row_stepsize * 2 > rgbheight:
-                            b_h = rgbheight - row
-                        else:
-                            b_h = row_stepsize
+        for row in range(0, rgbheight, row_stepsize):
+            if row + row_stepsize <= rgbheight:
+                for col in range(0, rgbwidth, col_stepsize):
+                    if col + col_stepsize <= rgbwidth:
+                        b_w = col_stepsize
+                        b_h = row_stepsize
+        # for col in range(0,rgbwidth,col_stepsize):
+        #     if col + col_stepsize <= rgbwidth:
+        #         for row in range(0, rgbheight, row_stepsize):
+        #             if row + row_stepsize <= rgbheight:
+        #                 b_w, b_h = 0,0
+        #
+        #                 if col + col_stepsize * 2 > rgbwidth:
+        #                     b_w = rgbwidth - col
+        #                 else:
+        #                     b_w = col_stepsize
+        #
+        #                 if row + row_stepsize * 2 > rgbheight:
+        #                     b_h = rgbheight - row
+        #                 else:
+        #                     b_h = row_stepsize
 
 
                         box = (col, row, col+b_w, row+b_h)
