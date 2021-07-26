@@ -65,6 +65,14 @@ class Zoom_Advanced(ttk.Frame):
         # RGBfile=cv2.cvtColor(imagearray,cv2.COLOR_BGR2RGB)
         self.path=path
         self.image=Image.open(self.path)
+        self.transimage=self.image.convert("RGBA")
+        newdata=[(255,255,255,0) for i in range(self.image.height*self.image.width)]
+        self.transimage.putdata(newdata)
+        # self.transimage.show()
+        # self.image.paste(self.transimage,(0,0),self.transimage)
+
+
+        # self.canvasimg=self.canvas.create_image(0,0,image=self.image,anchor='nw')
         self.npimage=np.zeros((self.image.height,self.image.width))
         # self.height, self.width,_ = np.shape(self.image)
         self.width, self.height = self.image.size
@@ -207,12 +215,18 @@ class Zoom_Advanced(ttk.Frame):
         y1 = max(bbox2[1] - bbox1[1], 0)
         x2 = min(bbox2[2], bbox1[2]) - bbox1[0]
         y2 = min(bbox2[3], bbox1[3]) - bbox1[1]
+        # self.image.paste(self.transimage,(0,0),self.transimage)
+        image=self.image.copy()
+        image.paste(self.transimage,(0,0),self.transimage)
+        # image=image.paste(self.transimage,(0,0),self.transimage)
         if int(x2 - x1) > 0 and int(y2 - y1) > 0:  # show image if it in the visible area
             x = min(int(x2 / self.imscale), self.width)   # sometimes it is larger on 1 pixel...
             y = min(int(y2 / self.imscale), self.height)  # ...and sometimes not
             # imagearray=self.image.astype('uint8')
             # self.image=Image.fromarray(self.image)
-            image = self.image.crop((int(x1 / self.imscale), int(y1 / self.imscale), x, y))
+            image = image.crop((int(x1 / self.imscale), int(y1 / self.imscale), x, y))
+            # transimg=self.transimage.crop((int(x1 / self.imscale), int(y1 / self.imscale), x, y))
+            # image=image.paste(transimg,(0,0),transimg)
             imagetk = ImageTk.PhotoImage(image.resize((int(x2 - x1), int(y2 - y1))))
             imageid = self.canvas.create_image(max(bbox2[0], bbox1[0]), max(bbox2[1], bbox1[1]),image=imagetk,
                                                anchor='nw')
@@ -253,10 +267,10 @@ class Zoom_Advanced(ttk.Frame):
         x1=max(locs[1])
         y1=max(locs[0])
         draw=ImageDraw.Draw(self.image)
-        endx=int(x0+(x1-x0)/2)
-        endy=int(y0+(y1-y0)/2)
-        draw.line(((x0,y0),(endx,y0)),fill='red',width=5) #draw up red line
-        draw.line(((x0,y0),(x0,endy)),fill='red',width=5) #draw left red line
+        # endx=int(x0+(x1-x0)/2)
+        # endy=int(y0+(y1-y0)/2)
+        draw.line(((x0,y0),(x1,y0)),fill='red',width=5) #draw up red line
+        draw.line(((x0,y0),(x0,y1)),fill='red',width=5) #draw left red line
         # self.show_image()
 
 
@@ -265,11 +279,11 @@ class Zoom_Advanced(ttk.Frame):
         y0=min(locs[0])
         x1=max(locs[1])
         y1=max(locs[0])
-        endx=int(x0+(x1-x0)/2)
-        endy=int(y0+(y1-y0)/2)
+        # endx=int(x0+(x1-x0)/2)
+        # endy=int(y0+(y1-y0)/2)
         draw=ImageDraw.Draw(self.image)
-        draw.line(((x0,y0),(endx,y0)),fill='white',width=5) #draw up red line
-        draw.line(((x0,y0),(x0,endy)),fill='white',width=5) #draw left red line
+        draw.line(((x0,y0),(x1,y0)),fill='white',width=5) #draw up red line
+        draw.line(((x0,y0),(x0,y1)),fill='white',width=5) #draw left red line
         # self.show_image()
 
     def labelimage(self,event):
@@ -346,24 +360,34 @@ class Zoom_Advanced(ttk.Frame):
             self.showcomparison([],False)
         self.show_image()
 
-    def adddiffsign(self,locs):
+    def adddiffsign(self,locs,type):
         x0=min(locs[1])
         y0=min(locs[0])
         x1=max(locs[1])
         y1=max(locs[0])
-        startx=int(x0+(x1-x0)/2)
-        draw=ImageDraw.Draw(self.image)
-        draw.line(((startx,y0),(x1,y0)),fill='orange',width=5) #draw up red line
+        # startx=int(x0+(x1-x0)/2)
+        draw=ImageDraw.Draw(self.transimage)
+        if type=='-1':
+        # draw.line(((startx,y0),(x1,y0)),fill='orange',width=5) #draw up red line
+            draw.ellipse([(x0-15,y0-15),(x0+15,y0+15)],fill='red')
         # draw.line(((x0,y0),(x0,y1)),fill='orange',width=5) #draw left red line
+        if type=='1':
+            draw.ellipse([(x0-15,y0-15),(x0+15,y0+15)], fill='white',outline='red', width=5)
 
     def rmdiffsign(self,locs):
         x0=min(locs[1])
         y0=min(locs[0])
         x1=max(locs[1])
         y1=max(locs[0])
-        startx = int(x0 + (x1 - x0) / 2)
-        draw=ImageDraw.Draw(self.image)
-        draw.line(((startx,y0),(x1,y0)),fill='white',width=5)
+
+        pixels=self.transimage.load()
+        for i in range(x0-15,x0+16):
+            for j in range(y0-15,y0+16):
+                pixels[i,j]=(255,255,255,0)
+        # startx = int(x0 + (x1 - x0) / 2)
+        # draw=ImageDraw.Draw(self.image)
+        # draw.line(((startx,y0),(x1,y0)),fill='white',width=5)
+
 
     def addconfbar(self,locs):
         x0=min(locs[1])
@@ -387,9 +411,14 @@ class Zoom_Advanced(ttk.Frame):
         satisfiedpred = np.where(np.array(self.confidence) >= self.confidthres)
         temppred=np.array(temppred)
         temppred[satisfiedpred] = 1
-        difflist=list((np.array(temppred)==np.array(self.infectlist))*1)
-        if difflist[i]==0:
-            self.adddiffsign(locs)
+        difflist=list(np.array(temppred)-np.array(self.infectlist))
+        if difflist[i]!=0:
+            if difflist[i]==1:
+                print('pred=1,user=0')
+                self.adddiffsign(locs,str(1))
+            if difflist[i]==-1:
+                print('pred=0,user=1')
+                self.adddiffsign(locs,str(-1))
         else:
             # if self.infectlist[i]==0:
             #     color='white'
@@ -419,13 +448,16 @@ class Zoom_Advanced(ttk.Frame):
         satisfiedpred=np.where(np.array(self.confidence)>=self.confidthres)
         temppred=np.array(temppred)
         temppred[satisfiedpred]=1
-        difflist=list((np.array(temppred)==np.array(self.infectlist))*1)
+        difflist=list(np.array(temppred)-np.array(self.infectlist))
         if hasPred==False:
             for i in range(len(difflist)):
                 locs=np.where(self.npimage==(i+1))
-                if difflist[i]==0:  #do not agree
+                if difflist[i]!=0:  #do not agree
                     print(i+1)
-                    self.adddiffsign(locs)
+                    if difflist[i]==1:
+                        self.adddiffsign(locs,'1')
+                    if difflist[i]==-1:
+                        self.adddiffsign(locs, '-1')
                 else:       #agree results
                     # if self.infectlist[i]==0:
                     #     color='white'
