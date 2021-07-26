@@ -367,11 +367,11 @@ class Zoom_Advanced(ttk.Frame):
         y1=max(locs[0])
         # startx=int(x0+(x1-x0)/2)
         draw=ImageDraw.Draw(self.transimage)
-        if type=='-1':
+        if type=='1':
         # draw.line(((startx,y0),(x1,y0)),fill='orange',width=5) #draw up red line
             draw.ellipse([(x0-15,y0-15),(x0+15,y0+15)],fill='red')
         # draw.line(((x0,y0),(x0,y1)),fill='orange',width=5) #draw left red line
-        if type=='1':
+        if type=='-1':
             draw.ellipse([(x0-15,y0-15),(x0+15,y0+15)], fill='white',outline='red', width=5)
 
     def rmdiffsign(self,locs):
@@ -520,7 +520,9 @@ class Zoom_Advanced(ttk.Frame):
     def output(self):
         res={}
         res.update({'npimage':self.npimage})
-        res.update({'labeledimage':self.image})
+        image=self.image.copy()
+        image.paste(self.transimage,(0,0),self.transimage)
+        res.update({'labeledimage':image})
         res.update({'infectedlist':self.infectlist})
         return res
 

@@ -426,7 +426,7 @@ def prediction():
         randomlabel=(np.array(random.sample(range(0,gridnum),int(gridnum/3))),)
         # predictlabels=np.array([0 for i in range(gridnum)])
         # predictlabels[randomlabel]=1
-        confidence=np.random.uniform(0.00,1.00,gridnum)
+        confidence=list(np.random.uniform(0.00,1.00,gridnum))
     print(len(confidence))
 
     zoom.showcomparison(list(confidence),hasPred)
