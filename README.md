@@ -8,4 +8,4 @@ An image auto-crop and labeling software in Python 3.7
 ##### YouTube: https://youtu.be/kThot9eCR-k
 
 #### Prediction model download link:
-#### https://www.dropbox.com/s/2gx01nh11v3pmer/StripeRustNet.pth?dl=0
+#### https://www.dropbox.com/s/rbprlwvivkz94ex/StripeRustNet.pth?dl=0
