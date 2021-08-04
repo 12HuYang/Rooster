@@ -193,7 +193,7 @@ class Zoom_Advanced(ttk.Frame):
         self.canvas.scale('all', x, y, scale, scale)  # rescale all canvas objects
         self.show_image()
 
-    def show_image(self, event=None):
+    def show_image(self,event=None):
         ''' Show image on the Canvas '''
         bbox1 = self.canvas.bbox(self.container)  # get image area
         # Remove 1 pixel shift at the sides of the bbox1
@@ -217,7 +217,8 @@ class Zoom_Advanced(ttk.Frame):
         y2 = min(bbox2[3], bbox1[3]) - bbox1[1]
         # self.image.paste(self.transimage,(0,0),self.transimage)
         image=self.image.copy()
-        image.paste(self.transimage,(0,0),self.transimage)
+        if self.getgrid==1:
+            image.paste(self.transimage,(0,0),self.transimage)
         # image=image.paste(self.transimage,(0,0),self.transimage)
         if int(x2 - x1) > 0 and int(y2 - y1) > 0:  # show image if it in the visible area
             x = min(int(x2 / self.imscale), self.width)   # sometimes it is larger on 1 pixel...
@@ -257,8 +258,9 @@ class Zoom_Advanced(ttk.Frame):
         else:
             self.image=Image.open(self.path)
             print(self.width,self.height)
-            self.show_image()
             self.getgrid=0
+            self.show_image()
+
 
 
     def addbars(self,locs):
