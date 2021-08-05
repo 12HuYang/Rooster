@@ -147,10 +147,13 @@ def Open_Map():
         import csv
         rows=[]
         transrows=[]
+        if os.name=='nt':
+            mapfile=r'%s' % mapfile
         with open(mapfile,'r',encoding='utf-8-sig') as f:
             csvreader=csv.reader(f)
             for row in csvreader:
-                rows.append(row)
+                if len(row)!=0:
+                    rows.append(row)
             rows.pop(0)
             totalgrid=len(rows)
             for i in range(totalgrid):
