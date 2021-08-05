@@ -7,7 +7,7 @@ An image auto-crop and labeling software in Python 3.7
 ![screenshot](https://raw.githubusercontent.com/12HuYang/Rooster/master/rusterdemo.gif)
 ##### YouTube: https://youtu.be/kThot9eCR-k
 
-#### WindowsOS 64bit version download link (Need to run ```ui_roster.exe``` under dist folder):
+#### Windows 10 64bit version download link (Need to run ```ui_roster.exe``` under dist folder):
 #### https://www.dropbox.com/sh/zxpckawcgcj52ju/AABzmCVVw3rHkwOBmGDZRJ7sa?dl=0 
 
 
