@@ -332,7 +332,7 @@ def implementexport(popup):
     outputcsv=outpath+'/'+e1.get()
     headline=['index','row','col','label','prediction','confidence']
     with open(outputcsv,mode='w') as f:
-        csvwriter=csv.writer(f)
+        csvwriter=csv.writer(f,lineterminator='\n')
         csvwriter.writerow(headline)
         rownum=int(rowentry.get())
         colnum=int(colentry.get())
