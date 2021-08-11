@@ -4,10 +4,12 @@ import tkinter.filedialog as filedialog
 from tkinter import messagebox
 from PIL import Image,ImageDraw,ImageFont
 from PIL import ImageTk,ImageGrab
+from PIL.ExifTags import TAGS,GPSTAGS
 import cv2
 import numpy as np
 import os
 from predictionModel import predictionCNN
+import rooster_batch
 
 root=Tk()
 root.title('Rootster v.0 ')
@@ -99,6 +101,19 @@ def Open_File():
         print('image size:',h,w)
         # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
+        imginfo=RGBimg.getexif()
+        exif_table={}
+        for tag,value in imginfo.items():
+            decoded=TAGS.get(tag,tag)
+            exif_table[decoded]=value
+        gps_info={}
+        for key in exif_table['GPSInfo'].keys():
+            decoded=GPSTAGS.get(key,key)
+            gps_info[decoded]=exif_table['GPSInfo'][key]
+        GPS_Lat=list(gps_info['GPSLatitude'])
+        GPS_Long=list(gps_info['GPSLongitude'])
+        print(GPS_Lat[0][0],GPS_Lat[1][0])
+        print(GPS_Long[0][0],GPS_Long[1][0])
         # head_tail = os.path.split(filename)
         # originfile, extension = os.path.splitext(head_tail[1])
         # print('head_tail',head_tail,'originfile',originfile,'extension',extension)
@@ -117,6 +132,26 @@ def zoomimage(opt):
 def Open_Multifile():
     global gridbutton,rowentry,colentry,exportbutton,filename,zoombar,mapfilebutton,hasMap,hasGrid,hasPred
     global reversebutton,predictbutton,slider,predictlabels,confidence
+    if proc_mode[proc_name].get()=='1':
+        filename=rooster_batch.Open_batchfolder()
+        if Open_File()!=False:
+            root.update()
+            mapfilebutton.configure(state=DISABLED)
+            # gridbutton.configure(state=DISABLED)
+            reversebutton.configure(state=DISABLED)
+            zoomin.configure(state=NORMAL)
+            zoomout.configure(state=NORMAL)
+            rowentry.configure(state=NORMAL)
+            colentry.configure(state=NORMAL)
+            gridbutton.configure(state=NORMAL)
+            exportbutton.configure(state=NORMAL)
+            # predictbutton.configure(state=NORMAL)
+            confidence=None
+            hasGrid=False
+            init_canvas(filename)
+            slider.state(["!disabled"])
+            # slider.bind('<ButtonRelease-1>',changeconfidencerange)
+        return
     filename=filedialog.askopenfilename()
     root.update()
     if Open_File()!=False:
@@ -207,7 +242,8 @@ def setGrid(resetimage=False):
         colnum=int(colentry.get())
         print(resetimage,rownum,colnum)
         confidence = None
-        slider.state(["disabled"])
+        if proc_mode[proc_name].get()=='0':
+            slider.state(["disabled"])
         slider.unbind('<Leave>')
         rgbwidth, rgbheight = RGBimg.size
         row_stepsize = int(rgbheight / rownum)
@@ -247,7 +283,8 @@ def setGrid(resetimage=False):
         rownum=temprownum
         colnum=tempcolnum
         confidence=None
-        slider.state(["disabled"])
+        if proc_mode[proc_name].get()=='0':
+            slider.state(["disabled"])
         slider.unbind('<Leave>')
         rgbwidth,rgbheight=RGBimg.size
         row_stepsize=int(rgbheight/rownum)
@@ -270,8 +307,9 @@ def setGrid(resetimage=False):
         # gridimg.show()
         zoom.changeimage(gridimg,rownum,colnum,hasGrid)
         hasGrid=True
-        reversebutton.configure(state=NORMAL)
-        predictbutton.configure(state=NORMAL)
+        if proc_mode[proc_name].get()=='0':
+            reversebutton.configure(state=NORMAL)
+            predictbutton.configure(state=NORMAL)
     else:
         zoom.changeimage(gridimg,0,0,hasGrid)
         hasGrid=False
@@ -379,6 +417,12 @@ def implementexport(popup):
 
 
 def export():
+    if proc_mode[proc_name].get()=='1':
+        rooster_batch.batch_exportpath()
+        if hasGrid==True:
+            global predictbutton
+            predictbutton.configure(state=NORMAL)
+        return
     if hasGrid==False:
         return
     exportopts()
@@ -396,6 +440,7 @@ def changeconfidencerange(event):
 
 def prediction():
     global predictlabels,confidence,hasPred
+    global slider
     if confidence is not None:
         zoom.showcomparison(confidence,hasPred)
         hasPred=-hasPred
@@ -420,6 +465,9 @@ def prediction():
         dlinput.update(imgpath)
         dlinput.update(dlparapath)
         dlinput.update(dlmodelvalue)
+        if proc_mode[proc_name].get()=='1':
+            rooster_batch.batch_process(dlinput,slider.get())
+            return
         confidence = predictionCNN(dlinput)
         #dlinput is the arguments for deep learning model prediction
         #return of deep learning model should be probability of being diseases
@@ -434,7 +482,7 @@ def prediction():
 
     zoom.showcomparison(list(confidence),hasPred)
     hasPred=-hasPred
-    global slider
+
     slider.set(0.50)
     slider.state(["!disabled"])
     slider.bind('<ButtonRelease-1>',changeconfidencerange)
@@ -461,6 +509,13 @@ l=640
 
 panelA=Canvas(imageframe,width=w,height=l,bg='black')
 panelA.grid(padx=20,pady=20)
+
+proc_name='batch_mode'
+proc_mode={proc_name:Variable()}
+proc_mode[proc_name].set('0')
+proc_but=Checkbutton(bottomframe,text=proc_name,variable=proc_mode[proc_name])
+proc_but.pack(side=LEFT,padx=20,pady=5)
+
 
 buttondisplay=LabelFrame(bottomframe,bd=0)
 buttondisplay.config(cursor='hand2')
