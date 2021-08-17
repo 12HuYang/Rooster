@@ -12,7 +12,7 @@ from predictionModel import predictionCNN
 import rooster_batch
 
 root=Tk()
-root.title('Rootster v.0 ')
+root.title('Rootster v1.0 ')
 root.geometry("")
 root.option_add('*tearoff',False)
 emptymenu=Menu(root)
