@@ -102,19 +102,22 @@ def Open_File():
         # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
         imginfo=RGBimg.getexif()
+        # print(imginfo,len(imginfo))
         if(len(imginfo))>0:
             exif_table={}
             for tag,value in imginfo.items():
                 decoded=TAGS.get(tag,tag)
                 exif_table[decoded]=value
-            gps_info={}
-            for key in exif_table['GPSInfo'].keys():
-                decoded=GPSTAGS.get(key,key)
-                gps_info[decoded]=exif_table['GPSInfo'][key]
-            GPS_Lat=list(gps_info['GPSLatitude'])
-            GPS_Long=list(gps_info['GPSLongitude'])
-            print(GPS_Lat[0][0],GPS_Lat[1][0])
-            print(GPS_Long[0][0],GPS_Long[1][0])
+            print(exif_table.keys())
+            if 'GPSInfo' in exif_table.keys():
+                gps_info={}
+                for key in exif_table['GPSInfo'].keys():
+                    decoded=GPSTAGS.get(key,key)
+                    gps_info[decoded]=exif_table['GPSInfo'][key]
+                GPS_Lat=list(gps_info['GPSLatitude'])
+                GPS_Long=list(gps_info['GPSLongitude'])
+                print('Latitude',GPS_Lat[0][0],GPS_Lat[1][0])
+                print('Longitude',GPS_Long[0][0],GPS_Long[1][0])
         # head_tail = os.path.split(filename)
         # originfile, extension = os.path.splitext(head_tail[1])
         # print('head_tail',head_tail,'originfile',originfile,'extension',extension)

@@ -60,15 +60,20 @@ class batch_ser_func():
             for tag,value in imginfo.items():
                 decoded=TAGS.get(tag,tag)
                 exif_table[decoded]=value
-            gps_info={}
-            for key in exif_table['GPSInfo'].keys():
-                decoded=GPSTAGS.get(key,key)
-                gps_info[decoded]=exif_table['GPSInfo'][key]
-            GPS_Lat=list(gps_info['GPSLatitude'])
-            GPS_Long=list(gps_info['GPSLongitude'])
-            latitude=str(GPS_Lat[0][0])+'.'+str(GPS_Lat[1][0])+"'"+str(GPS_Lat[2][0])+"''"
-            # print()
-            longitude=str(GPS_Long[0][0])+'.'+str(GPS_Long[1][0])+"'"+str(GPS_Long[2][0])+"''"
+            print(exif_table.keys())
+            if 'GPSInfo' in exif_table.keys():
+                gps_info={}
+                for key in exif_table['GPSInfo'].keys():
+                    decoded=GPSTAGS.get(key,key)
+                    gps_info[decoded]=exif_table['GPSInfo'][key]
+                GPS_Lat=list(gps_info['GPSLatitude'])
+                GPS_Long=list(gps_info['GPSLongitude'])
+                latitude=str(GPS_Lat[0][0])+'.'+str(GPS_Lat[1][0])+"'"+str(GPS_Lat[2][0])+"''"
+                # print()
+                longitude=str(GPS_Long[0][0])+'.'+str(GPS_Long[1][0])+"'"+str(GPS_Long[2][0])+"''"
+            else:
+                longitude=0
+                latitude=0
             # print
         else:
             longitude=0
