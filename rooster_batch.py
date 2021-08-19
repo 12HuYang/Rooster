@@ -232,6 +232,7 @@ def batch_process(dlinput,inputconfidence):
     head=['filename','healthy#','infected#','Longitude(E,W)','Latitude(N,S)','avg-confid','std-confid','max-confid','min-confid']
     batch_summary.append(head)
     for file in batch_filenames:
+        dlinput['imagepath']=os.path.join(FOLDER,file)
         procobj=batch_ser_func(file,dlinput,inputconfidence)
         filesummary=procobj.process()
         batch_summary.append(filesummary)

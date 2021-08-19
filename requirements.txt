@@ -1,5 +1,5 @@
 numpy
-pillow
+pillow==7.1.2
 opencv-python
 torch==1.7.0
 torchvision==0.8.1

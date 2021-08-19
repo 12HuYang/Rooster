@@ -101,7 +101,10 @@ def Open_File():
         print('image size:',h,w)
         # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
-        imginfo=RGBimg.getexif()
+        try:
+            imginfo=RGBimg.getexif()
+        except:
+            return True
         # print(imginfo,len(imginfo))
         if(len(imginfo))>0:
             exif_table={}
