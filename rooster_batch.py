@@ -44,6 +44,24 @@ class batch_ser_func():
         # self.show_image()
 
     def export_single(self):
+        if self.localdlinput['model']=='':
+            rownum=self.localdlinput['row']
+            colnum=self.localdlinput['col']
+            gridnum=rownum*colnum
+            filenamepart=os.path.splitext(self.file)
+            outputname=filenamepart[0]+'_crop_'
+            for i in range(gridnum):
+                index=i+1
+                row=int(i/colnum)
+                col=i%colnum
+                locs=np.where(self.npimage==index)
+                x0=min(locs[1])
+                y0=min(locs[0])
+                x1=max(locs[1])
+                y1=max(locs[0])
+                cropimage=self.RGBimg.crop((x0,y0,x1,y1))
+                cropimage.save(self.exportpath+'/'+outputname+str(index)+'.png','PNG')
+            return
         #draw gridimg
         for i in range(len(self.predres)):
             if self.predres[i]==1:
@@ -138,6 +156,8 @@ class batch_ser_func():
         return summary
 
     def prediction(self):
+        if self.localdlinput['model']=='':
+            return
         self.confidence=predictionCNN(self.localdlinput)
         temppred=[0 for i in range(len(self.confidence))]
         satisfiedpred=np.where(np.array(self.confidence)>=self.confidthres)
@@ -208,7 +228,7 @@ def Open_batchfolder():
         print(FOLDER)
         files=os.listdir(FOLDER)
         for filename in files:
-            if 'jpg' in filename or 'jpeg' in filename or 'JPG' in filename:
+            if 'jpg' in filename or 'jpeg' in filename or 'JPG' in filename or 'tif' in filename:
                 batch_filenames.append(filename)
     batch_filenames.sort()
     print('filenames',batch_filenames)
@@ -241,8 +261,9 @@ def batch_process(dlinput,inputconfidence):
     outputcsv=os.path.join(exportpath,'summary'+'_confidthres='+str(inputconfidence)+'_.csv')
     with open(outputcsv,mode='w') as f:
         csvwriter=csv.writer(f,lineterminator='\n')
-        for ele in batch_summary:
-            csvwriter.writerow(ele)
+        if len(batch_summary)>0:
+            for ele in batch_summary:
+                csvwriter.writerow(ele)
         f.close()
     print('used time',time.time()-starttime)
     messagebox.showinfo('Batch processing done','Batch process done!')

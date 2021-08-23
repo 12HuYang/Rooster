@@ -5,7 +5,7 @@
 import random
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk, ImageDraw
+from PIL import Image, ImageTk, ImageDraw, ImageOps
 import tkinter.filedialog as filedialog
 import cv2
 import numpy as np
@@ -28,7 +28,7 @@ class AutoScrollbar(ttk.Scrollbar):
 
 class Zoom_Advanced(ttk.Frame):
     ''' Advanced zoom of the image '''
-    def __init__(self, mainframe, canvas,path,rownum,colnum,canvasw,canvash):
+    def __init__(self, mainframe, canvas,path,rownum,colnum,canvasw,canvash,ori_h,ori_w):
         ''' Initialize the main Frame '''
         ttk.Frame.__init__(self, master=mainframe)
         # self.master.title('Zoom with mouse wheel')
@@ -42,6 +42,8 @@ class Zoom_Advanced(ttk.Frame):
         self.canvash=canvash
         self.canvas = canvas
         self.canvas.configure(xscrollcommand=hbar.set,yscrollcommand=vbar.set)
+        self.ori_height=ori_h
+        self.ori_width=ori_w
         # tk.Canvas(self.master, highlightthickness=0,
         #                         xscrollcommand=hbar.set, yscrollcommand=vbar.set)
         self.canvas.grid(row=0, column=0, sticky='nswe')
@@ -65,6 +67,13 @@ class Zoom_Advanced(ttk.Frame):
         # RGBfile=cv2.cvtColor(imagearray,cv2.COLOR_BGR2RGB)
         self.path=path
         self.image=Image.open(self.path)
+        # self.image=ImageOps.exif_transpose(self.image)
+        # self.image.show()
+        if self.image.height!=self.ori_height:
+            im=self.image.rotate(-90,expand=True)
+            # im.show()
+            print('im h,w',im.height,im.width)
+            self.image=im
         self.transimage=self.image.convert("RGBA")
         newdata=[(255,255,255,0) for i in range(self.image.height*self.image.width)]
         self.transimage.putdata(newdata)
@@ -74,9 +83,12 @@ class Zoom_Advanced(ttk.Frame):
 
         # self.canvasimg=self.canvas.create_image(0,0,image=self.image,anchor='nw')
         self.npimage=np.zeros((self.image.height,self.image.width))
+        print('self.image',self.image.height,self.image.width)
         # self.height, self.width,_ = np.shape(self.image)
-        self.width, self.height = self.image.size
-        print(self.width,self.height)
+        self.width=self.image.width
+        self.height=self.image.height
+        # self.width, self.height = self.image.size
+        print('copyed width height',self.height,self.width)
         self.imscale = 1.0  # scale for the canvaas image
         self.delta = 1.2  # zoom magnitude
         # Put image into container rectangle and use it to set proper coordinates to the image

@@ -41,6 +41,9 @@ colnum=0
 csvname=''
 e1=None
 
+ori_height=0
+ori_width=0
+
 
 # ------functions-----
 
@@ -49,7 +52,7 @@ def init_canvas(path):
     global panelA,zoom
     rownum=int(rowentry.get())
     colnum=int(colentry.get())
-    zoom=zoom_example.Zoom_Advanced(imageframe,panelA,path,rownum,colnum,1440,900)
+    zoom=zoom_example.Zoom_Advanced(imageframe,panelA,path,rownum,colnum,1440,900,ori_height,ori_width)
 
 
 
@@ -99,6 +102,9 @@ def Open_File():
         Filersc=cv2.imread(filename,flags=cv2.IMREAD_ANYCOLOR)
         h,w,c=np.shape(Filersc)
         print('image size:',h,w)
+        global ori_height,ori_width
+        ori_height=h
+        ori_width=w
         # RGBbands=cv2.cvtColor(Filersc,cv2.COLOR_BGR2RGB)
         RGBimg=Image.open(filename)
         try:
@@ -479,6 +485,19 @@ def prediction():
         #dlinput is the arguments for deep learning model prediction
         #return of deep learning model should be probability of being diseases
     else:
+        if proc_mode[proc_name].get()=='1':
+            rownumdict={'row':rownum}
+            colnumdict={'col':colnum}
+            imgpath={'imagepath':filename}
+            dlparapath={'weight':dlparameter}
+            dlmodelvalue={'model':''}
+            dlinput={}
+            dlinput.update(rownumdict)
+            dlinput.update(colnumdict)
+            dlinput.update(imgpath)
+            dlinput.update(dlparapath)
+            dlinput.update(dlmodelvalue)
+            rooster_batch.batch_process(dlinput,slider.get())
         import random
         gridnum = int(rowentry.get()) * int(colentry.get())
         randomlabel=(np.array(random.sample(range(0,gridnum),int(gridnum/3))),)
