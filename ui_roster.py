@@ -9,6 +9,7 @@ import numpy as np
 import os
 from predictionModel import predictionCNN
 import rooster_batch
+from PIL.ExifTags import TAGS,GPSTAGS
 
 root=Tk()
 root.title('Rootster v1.0 ')
@@ -379,33 +380,13 @@ def implementexport(popup):
     labelimage=res['labeledimage']
     infectedlist=res['infectedlist']
     import csv
-    from PIL.ExifTags import TAGS,GPSTAGS
+
     head_tail=os.path.split(filename)
     originfile,extension=os.path.splitext(head_tail[1])
     # if exportoption.get()=='P':
     #     outputcsv=outpath+'/'+originfile+'_prediction.csv'
     #     headline=['index','row','col','prediction']
     # if exportoption.get()=='C':
-    try:
-        imginfo=RGBimg.getexif()
-    except:
-        print('cannot extrat GPS by PIL getexif')
-    # print(imginfo,len(imginfo))
-    if(len(imginfo))>0:
-        exif_table={}
-        for tag,value in imginfo.items():
-            decoded=TAGS.get(tag,tag)
-            exif_table[decoded]=value
-        print(exif_table.keys())
-        if 'GPSInfo' in exif_table.keys():
-            gps_info={}
-            for key in exif_table['GPSInfo'].keys():
-                decoded=GPSTAGS.get(key,key)
-                gps_info[decoded]=exif_table['GPSInfo'][key]
-            GPS_Lat=list(gps_info['GPSLatitude'])
-            GPS_Long=list(gps_info['GPSLongitude'])
-            print('Latitude',GPS_Lat[0][0],GPS_Lat[1][0])
-            print('Longitude',GPS_Long[0][0],GPS_Long[1][0])
     outputcsv=outpath+'/'+e1.get()
     headline=['index','row','col','label','prediction','confidence']
     with open(outputcsv,mode='w') as f:
