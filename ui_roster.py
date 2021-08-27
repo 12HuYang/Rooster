@@ -4,7 +4,6 @@ import tkinter.filedialog as filedialog
 from tkinter import messagebox
 from PIL import Image,ImageDraw,ImageFont
 from PIL import ImageTk,ImageGrab
-from PIL.ExifTags import TAGS,GPSTAGS
 import cv2
 import numpy as np
 import os
@@ -120,19 +119,25 @@ def Open_File():
             print(exif_table.keys())
             if 'GPSInfo' in exif_table.keys():
                 gps_info={}
-                for key in exif_table['GPSInfo'].keys():
-                    decoded=GPSTAGS.get(key,key)
-                    gps_info[decoded]=exif_table['GPSInfo'][key]
-                GPS_Lat=list(gps_info['GPSLatitude'])
-                GPS_Long=list(gps_info['GPSLongitude'])
-                print('Latitude',GPS_Lat[0][0],GPS_Lat[1][0])
-                print('Longitude',GPS_Long[0][0],GPS_Long[1][0])
+                if type(exif_table['GPSInfo'])==dict:
+                    for key in exif_table['GPSInfo'].keys():
+                        decoded=GPSTAGS.get(key,key)
+                        gps_info[decoded]=exif_table['GPSInfo'][key]
+                    GPS_Lat=list(gps_info['GPSLatitude'])
+                    GPS_Long=list(gps_info['GPSLongitude'])
+                    print('Latitude',GPS_Lat[0][0],GPS_Lat[1][0])
+                    print('Longitude',GPS_Long[0][0],GPS_Long[1][0])
+                else:
+                    return True
+            else:
+                return True
+        else:
+            return True
         # head_tail = os.path.split(filename)
         # originfile, extension = os.path.splitext(head_tail[1])
         # print('head_tail',head_tail,'originfile',originfile,'extension',extension)
     except:
         return False
-    return True
 
 def zoomimage(opt):
     global zoom
@@ -374,12 +379,33 @@ def implementexport(popup):
     labelimage=res['labeledimage']
     infectedlist=res['infectedlist']
     import csv
+    from PIL.ExifTags import TAGS,GPSTAGS
     head_tail=os.path.split(filename)
     originfile,extension=os.path.splitext(head_tail[1])
     # if exportoption.get()=='P':
     #     outputcsv=outpath+'/'+originfile+'_prediction.csv'
     #     headline=['index','row','col','prediction']
     # if exportoption.get()=='C':
+    try:
+        imginfo=RGBimg.getexif()
+    except:
+        print('cannot extrat GPS by PIL getexif')
+    # print(imginfo,len(imginfo))
+    if(len(imginfo))>0:
+        exif_table={}
+        for tag,value in imginfo.items():
+            decoded=TAGS.get(tag,tag)
+            exif_table[decoded]=value
+        print(exif_table.keys())
+        if 'GPSInfo' in exif_table.keys():
+            gps_info={}
+            for key in exif_table['GPSInfo'].keys():
+                decoded=GPSTAGS.get(key,key)
+                gps_info[decoded]=exif_table['GPSInfo'][key]
+            GPS_Lat=list(gps_info['GPSLatitude'])
+            GPS_Long=list(gps_info['GPSLongitude'])
+            print('Latitude',GPS_Lat[0][0],GPS_Lat[1][0])
+            print('Longitude',GPS_Long[0][0],GPS_Long[1][0])
     outputcsv=outpath+'/'+e1.get()
     headline=['index','row','col','label','prediction','confidence']
     with open(outputcsv,mode='w') as f:
@@ -498,6 +524,7 @@ def prediction():
             dlinput.update(dlparapath)
             dlinput.update(dlmodelvalue)
             rooster_batch.batch_process(dlinput,slider.get())
+            return
         import random
         gridnum = int(rowentry.get()) * int(colentry.get())
         randomlabel=(np.array(random.sample(range(0,gridnum),int(gridnum/3))),)

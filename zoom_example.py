@@ -69,11 +69,11 @@ class Zoom_Advanced(ttk.Frame):
         self.image=Image.open(self.path)
         # self.image=ImageOps.exif_transpose(self.image)
         # self.image.show()
-        if self.image.height!=self.ori_height:
-            im=self.image.rotate(-90,expand=True)
-            # im.show()
-            print('im h,w',im.height,im.width)
-            self.image=im
+        # if self.image.height!=self.ori_height:
+        #     im=self.image.rotate(-90,expand=True)
+        #     # im.show()
+        #     print('im h,w',im.height,im.width)
+        #     self.image=im
         self.transimage=self.image.convert("RGBA")
         newdata=[(255,255,255,0) for i in range(self.image.height*self.image.width)]
         self.transimage.putdata(newdata)

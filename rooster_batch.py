@@ -3,7 +3,7 @@ from tkinter import messagebox
 import os
 from predictionModel import predictionCNN
 from PIL import Image,ImageDraw,ImageFont
-from PIL.ExifTags import TAGS,GPSTAGS
+
 import numpy as np
 
 import multiprocessing
@@ -32,6 +32,8 @@ class batch_ser_func():
 
 
     def addbars(self,locs):
+        if self.localdlinput['model']=='':
+            return
         x0=min(locs[1])
         y0=min(locs[0])
         x1=max(locs[1])
@@ -71,7 +73,7 @@ class batch_ser_func():
         outputname=filenamepart[0]+'_gridimg.png'
         totalhealthy=self.predres.count(0)
         totalinfect=self.predres.count(1)
-
+        from PIL.ExifTags import TAGS,GPSTAGS
         imginfo=self.RGBimg.getexif()
         if len(imginfo)>0:
             exif_table={}
@@ -81,14 +83,18 @@ class batch_ser_func():
             print(exif_table.keys())
             if 'GPSInfo' in exif_table.keys():
                 gps_info={}
-                for key in exif_table['GPSInfo'].keys():
-                    decoded=GPSTAGS.get(key,key)
-                    gps_info[decoded]=exif_table['GPSInfo'][key]
-                GPS_Lat=list(gps_info['GPSLatitude'])
-                GPS_Long=list(gps_info['GPSLongitude'])
-                latitude=str(GPS_Lat[0][0])+'.'+str(GPS_Lat[1][0])+"'"+str(GPS_Lat[2][0])+"''"
-                # print()
-                longitude=str(GPS_Long[0][0])+'.'+str(GPS_Long[1][0])+"'"+str(GPS_Long[2][0])+"''"
+                if type(exif_table['GPSInfo'])==dict:
+                    for key in exif_table['GPSInfo'].keys():
+                        decoded=GPSTAGS.get(key,key)
+                        gps_info[decoded]=exif_table['GPSInfo'][key]
+                    GPS_Lat=list(gps_info['GPSLatitude'])
+                    GPS_Long=list(gps_info['GPSLongitude'])
+                    latitude=str(GPS_Lat[0][0])+'.'+str(GPS_Lat[1][0])+"'"+str(GPS_Lat[2][0])+"''"
+                    # print()
+                    longitude=str(GPS_Long[0][0])+'.'+str(GPS_Long[1][0])+"'"+str(GPS_Long[2][0])+"''"
+                else:
+                    longitude=0
+                    latitude=0
             else:
                 longitude=0
                 latitude=0
@@ -167,6 +173,8 @@ class batch_ser_func():
         pass
 
     def drawgrid(self):
+        if self.localdlinput['model']=='':
+            return
         row_stepsize = int(self.rgbheight / self.localdlinput['row'])
         col_stepsize = int(self.rgbwidth / self.localdlinput['col'])
         draw = ImageDraw.Draw(self.RGBimg)
@@ -257,13 +265,14 @@ def batch_process(dlinput,inputconfidence):
         filesummary=procobj.process()
         batch_summary.append(filesummary)
         del procobj
-    import csv
-    outputcsv=os.path.join(exportpath,'summary'+'_confidthres='+str(inputconfidence)+'_.csv')
-    with open(outputcsv,mode='w') as f:
-        csvwriter=csv.writer(f,lineterminator='\n')
-        if len(batch_summary)>0:
-            for ele in batch_summary:
-                csvwriter.writerow(ele)
-        f.close()
+    if dlinput['model']!='':
+        import csv
+        outputcsv=os.path.join(exportpath,'summary'+'_confidthres='+str(inputconfidence)+'_.csv')
+        with open(outputcsv,mode='w') as f:
+            csvwriter=csv.writer(f,lineterminator='\n')
+            if len(batch_summary)>0:
+                for ele in batch_summary:
+                    csvwriter.writerow(ele)
+            f.close()
     print('used time',time.time()-starttime)
     messagebox.showinfo('Batch processing done','Batch process done!')
