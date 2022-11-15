@@ -1,4 +1,7 @@
 # Rooster
+[![DOI](https://zenodo.org/badge/385743266.svg)](https://zenodo.org/badge/latestdoi/385743266)
+
+
 #### Windows10 64bit version is available, check the download link below
 An image auto-crop and labeling software in Python 3.7
 #### Need to run ```brew install libheif``` to install pyheif package
